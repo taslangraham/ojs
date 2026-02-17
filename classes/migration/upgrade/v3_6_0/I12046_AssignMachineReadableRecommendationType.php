@@ -99,7 +99,16 @@ class I12046_AssignMachineReadableRecommendationType extends BaseI12046_AssignMa
                             $this->log('Affected rows: ' . $affectedRows);
                         }
                     }
+
+                    // select all recommendation with context id
+                    $allRecommendations = DB::table('reviewer_recommendations')
+                        ->where('context_id', $contextId)
+                        ->select('reviewer_recommendation_id as id', 'type')
+                        ->get();
+
+                    $this->log('All recommendations for context ID ' . $contextId . ': ' . json_encode($allRecommendations));
                 }
             });
+
     }
 }
