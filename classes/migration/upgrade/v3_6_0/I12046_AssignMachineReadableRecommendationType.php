@@ -23,6 +23,7 @@ class I12046_AssignMachineReadableRecommendationType extends BaseI12046_AssignMa
      */
     public function up(): void
     {
+        $this->log('calling parent up()');
         parent::up();
         $this->addTypeToDefaultRecommendations();
     }
@@ -34,6 +35,7 @@ class I12046_AssignMachineReadableRecommendationType extends BaseI12046_AssignMa
      */
     private function addTypeToDefaultRecommendations(): void
     {
+        $this->log('inside addTypeToDefaultRecommendations');
         /**
          * Mapping of machine-readable recommendation types to the locale keys of the default recommendations.
          * Each key is a type(see ReviewerRecommendationType.php), and its value is an array of locale keys for associated default recommendations.
@@ -62,23 +64,39 @@ class I12046_AssignMachineReadableRecommendationType extends BaseI12046_AssignMa
         DB::table('journals')
             ->orderBy('journal_id')
             ->chunk(100, function ($contexts) use ($recommendationTypes) {
+                $this->log('in chunk');
+
                 foreach ($contexts as $context) {
                     $contextId = $context->journal_id;
+                    $this->log("looping thru journal IDs. ID: {$context->journal_id}");
 
                     foreach ($recommendationTypes as $type => $localeKeys) {
-                        $defaultRecommendationIdsToUpdate = DB::table('reviewer_recommendations as rr')
+                        $q = DB::table('reviewer_recommendations as rr')
                             ->join('reviewer_recommendation_settings as rrs_default', 'rr.reviewer_recommendation_id', '=', 'rrs_default.reviewer_recommendation_id')
                             ->where('rrs_default.setting_name', 'defaultTranslationKey')
                             ->whereIn('rrs_default.setting_value', $localeKeys)
                             ->where('rr.context_id', $contextId)
-                            ->select('rr.reviewer_recommendation_id as id')
-                            ->get()
-                            ->pluck('id');
+                            ->select('rr.reviewer_recommendation_id as id');
+
+
+                        $this->log('defaultRecommendationIdsToUpdate sql: ' . $q->toSql());
+                        $this->log('defaultRecommendationIdsToUpdate - Bindings: ' . json_encode($q->getBindings()));
+
+                        $defaultRecommendationIdsToUpdate = $q->get()->pluck('id');
+                        $this->log('defaultRecommendationIdsToUpdate: ' . implode(', ', $defaultRecommendationIdsToUpdate));
 
                         if (!empty($defaultRecommendationIdsToUpdate)) {
-                            DB::table('reviewer_recommendations')
-                                ->whereIn('reviewer_recommendation_id', $defaultRecommendationIdsToUpdate)
-                                ->update(['type' => $type]);
+                            $this->log('doing insert ');
+
+
+                            $q = DB::table('reviewer_recommendations')
+                                ->whereIn('reviewer_recommendation_id', $defaultRecommendationIdsToUpdate);
+
+                            $this->log('Update SQL: ' . $q->toSql());
+                            $this->log('Update Bindings: ' . json_encode($q->getBindings()));
+
+                            $affectedRows = $q->update(['type' => $type]);
+                            $this->log('Affected rows: ' . $affectedRows);
                         }
                     }
                 }
