@@ -83,7 +83,7 @@ class I12046_AssignMachineReadableRecommendationType extends BaseI12046_AssignMa
                         $this->log('defaultRecommendationIdsToUpdate - Bindings: ' . json_encode($q->getBindings()));
 
                         $defaultRecommendationIdsToUpdate = $q->get()->pluck('id');
-                        $this->log('defaultRecommendationIdsToUpdate: ' . implode(', ', $defaultRecommendationIdsToUpdate));
+                        $this->log('defaultRecommendationIdsToUpdate: ' . implode(', ', $defaultRecommendationIdsToUpdate->toArray()));
 
                         if (!empty($defaultRecommendationIdsToUpdate)) {
                             $this->log('doing insert ');
