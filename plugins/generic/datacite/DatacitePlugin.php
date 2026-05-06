@@ -135,6 +135,9 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
         return ['temporaryFileId' => $temporaryFileId, 'xmlErrors' => $xmlErrors];
     }
 
+    /**
+     * @copyDoc IDoiRegistrationAgency::exportPeerReviews()
+     */
     public function exportPeerReviews(array $reviewAssignments, Context $context): array
     {
         return [];
@@ -170,6 +173,9 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
         ];
     }
 
+    /**
+     * @copyDoc IDoiRegistrationAgency::depositPeerReviews()
+     */
     public function depositPeerReviews(array $peerReviews, Context $context): array
     {
         return [];
